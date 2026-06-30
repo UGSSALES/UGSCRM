@@ -1,176 +1,203 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123c33">
-  <title>FreightFlow CRM</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 40 40"><path d="M8 12h16l8 8-8 8H8l8-8-8-8Z"/><path d="m18 12 8 8-8 8"/></svg>
-        </div>
-        <div><strong>FreightFlow</strong><span>Sales CRM</span></div>
-      </div>
-      <nav aria-label="Main navigation">
-        <button class="nav-item active" data-view="dashboard">
-          <svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>
-          Dashboard
-        </button>
-        <button class="nav-item" data-view="customers">
-          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          Customers
-        </button>
-        <button class="nav-item" data-view="followups">
-          <svg viewBox="0 0 24 24"><path d="M12 8v4l3 2M21 12a9 9 0 1 1-3-6.7M21 3v6h-6"/></svg>
-          Follow-ups
-          <span class="nav-badge" id="followupNavBadge">0</span>
-        </button>
-      </nav>
-      <div class="sidebar-foot">
-        <p>Your sales data stays on this computer.</p>
-        <button class="text-button" id="exportBtn">Export backup</button>
-        <label class="text-button import-label">Import backup<input type="file" id="importInput" accept=".csv"></label>
-      </div>
-    </aside>
+const STORAGE_KEY = "freightflow-crm-v1";
+const todayISO = () => new Date().toLocaleDateString("en-CA");
+const addDays = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return d.toLocaleDateString("en-CA"); };
 
-    <main>
-      <header class="topbar">
-        <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-          <input id="globalSearch" type="search" placeholder="Search customers, contacts, lanes...">
-        </div>
-        <button class="primary-button" id="addCustomerBtn"><span>＋</span> Add customer</button>
-      </header>
+const starterData = [
+  {id:"ff-101",name:"Northstar Home Goods",contact:"Elena Ruiz",email:"elena@northstarhome.com",phone:"+1 312 555 0148",lane:"Transpacific Eastbound",origins:"China, Vietnam",destinations:"United States",volume:1250,unit:"TEU",followup:addDays(-2),status:"Qualified",notes:"Review updated contract rates.",created:addDays(-3)},
+  {id:"ff-102",name:"Atlas Auto Parts",contact:"Marcus Chen",email:"marcus@atlasauto.com",phone:"+1 248 555 0190",lane:"Asia to North America",origins:"Japan, South Korea",destinations:"United States, Mexico",volume:840,unit:"TEU",followup:todayISO(),status:"Prospect",notes:"Call about Q3 forecast and port preferences.",created:addDays(-6)},
+  {id:"ff-103",name:"Verdant Foods",contact:"Sophie Laurent",email:"sophie@verdantfoods.fr",phone:"+33 1 84 80 22 10",lane:"Europe to US East Coast",origins:"France, Spain",destinations:"United States",volume:460,unit:"Shipments",followup:addDays(2),status:"Customer",notes:"Discuss refrigerated service options.",created:addDays(-9)},
+  {id:"ff-104",name:"Solstice Outdoor",contact:"Noah Williams",email:"noah@solsticeoutdoor.com",phone:"+1 206 555 0177",lane:"Intra-Americas",origins:"United States",destinations:"Canada, Chile",volume:320,unit:"Shipments",followup:addDays(5),status:"Prospect",notes:"Send lane coverage summary.",created:addDays(-1)},
+  {id:"ff-105",name:"Meridian Textiles",contact:"Aisha Rahman",email:"aisha@meridiantextiles.com",phone:"+880 2 555 0184",lane:"Indian Subcontinent to Europe",origins:"Bangladesh, India",destinations:"Germany, Netherlands",volume:980,unit:"TEU",followup:addDays(9),status:"Qualified",notes:"Follow up after sourcing team meeting.",created:addDays(-12)}
+];
 
-      <section class="content">
-        <div class="view active" id="dashboardView">
-          <div class="page-heading">
-            <div><p class="eyebrow" id="dateGreeting"></p><h1>Sales overview</h1><p>Stay close to every opportunity and keep freight moving.</p></div>
-          </div>
-          <div class="metric-grid">
-            <article class="metric-card">
-              <div class="metric-icon green"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
-              <span>Total prospects</span><strong id="totalProspects">0</strong><small id="prospectTrend">Build your pipeline</small>
-            </article>
-            <article class="metric-card">
-              <div class="metric-icon blue"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 17l4-5 4 3 6-9M16 6h3v3"/></svg></div>
-              <span>Annual volume</span><strong id="totalVolume">0</strong><small>TEU / shipments in pipeline</small>
-            </article>
-            <article class="metric-card urgent">
-              <div class="metric-icon coral"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 17h.01"/></svg></div>
-              <span>Needs attention</span><strong id="overdueCount">0</strong><small>Overdue follow-ups</small>
-            </article>
-            <article class="metric-card">
-              <div class="metric-icon amber"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></div>
-              <span>Due this week</span><strong id="weekCount">0</strong><small>Follow-ups in next 7 days</small>
-            </article>
-          </div>
+let customers = loadCustomers();
+let activeFilter = "All";
+let searchTerm = "";
+let deleteTarget = null;
 
-          <div class="dashboard-grid">
-            <article class="panel followup-panel">
-              <div class="panel-head"><div><h2>Next follow-ups</h2><p>Your most time-sensitive conversations</p></div><button class="link-button" data-go="followups">View all →</button></div>
-              <div id="followupList" class="followup-list"></div>
-            </article>
-            <article class="panel volume-panel">
-              <div class="panel-head"><div><h2>Volume by status</h2><p>Annual opportunity mix</p></div></div>
-              <div id="volumeChart" class="volume-chart"></div>
-            </article>
-          </div>
+function loadCustomers() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const existing = saved ? JSON.parse(saved) : starterData;
+    const names = new Set(existing.map(c => String(c.name || "").trim().toLowerCase()));
+    const merged = [...existing, ...WORKBOOK_PROSPECTS.filter(c => !names.has(c.name.trim().toLowerCase()))];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    return merged;
+  } catch { return starterData; }
+}
+function saveCustomers() { localStorage.setItem(STORAGE_KEY, JSON.stringify(customers)); }
+function esc(value="") { return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c])); }
+function initials(name) { return name.split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase(); }
+function hasDate(value) { return /^\d{4}-\d{2}-\d{2}$/.test(value || ""); }
+function parseDate(value) { return hasDate(value) ? new Date(value + "T12:00:00") : null; }
+function daysFromToday(value) {
+  const a = parseDate(todayISO()), b = parseDate(value);
+  if (!b) return null;
+  return Math.round((b-a)/86400000);
+}
+function formatDate(value, short=false) {
+  if (!hasDate(value)) return "Not scheduled";
+  return parseDate(value).toLocaleDateString("en-US", short ? {month:"short",day:"numeric"} : {month:"short",day:"numeric",year:"numeric"});
+}
+function dueText(value) {
+  const days = daysFromToday(value);
+  if (days === null) return "Not scheduled";
+  if (days < 0) return `${Math.abs(days)} day${Math.abs(days)===1?"":"s"} overdue`;
+  if (days === 0) return "Due today";
+  if (days === 1) return "Tomorrow";
+  return formatDate(value);
+}
+function statusClass(status) { return status.toLowerCase().replace(/\s/g,"-"); }
+function statusPill(status) { return `<span class="status-pill ${statusClass(status)}">${esc(status)}</span>`; }
+function customerCell(c) {
+  return `<div class="customer-cell"><span class="avatar">${esc(initials(c.name))}</span><div><strong>${esc(c.name)}</strong><small>${esc(c.contact || "No contact")} · ${esc(c.email || "No email")}</small></div></div>`;
+}
+function actionMenu(c) {
+  return `<div class="row-actions"><button class="menu-button" data-menu="${c.id}" aria-label="Customer actions">⋯</button><div class="action-menu hidden" id="menu-${c.id}"><button data-edit="${c.id}">Edit details</button><button data-complete="${c.id}">Complete follow-up</button><button class="delete-action" data-delete="${c.id}">Delete</button></div></div>`;
+}
 
-          <article class="panel recent-panel">
-            <div class="panel-head"><div><h2>Recently added</h2><p>Your newest freight opportunities</p></div><button class="link-button" data-go="customers">All customers →</button></div>
-            <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Lane</th><th>Annual volume</th><th>Status</th><th>Next follow-up</th><th></th></tr></thead><tbody id="recentTable"></tbody></table></div>
-          </article>
-        </div>
+function render() {
+  const scheduled = customers.filter(c=>hasDate(c.followup));
+  const sortedByFollowup = [...scheduled].sort((a,b)=>a.followup.localeCompare(b.followup));
+  const overdue = scheduled.filter(c=>daysFromToday(c.followup)<0);
+  const dueWeek = scheduled.filter(c=>{const d=daysFromToday(c.followup);return d>=0&&d<=7});
+  document.getElementById("totalProspects").textContent = customers.length;
+  document.getElementById("totalVolume").textContent = customers.reduce((n,c)=>n+(Number(c.volume)||0),0).toLocaleString();
+  document.getElementById("overdueCount").textContent = overdue.length;
+  document.getElementById("weekCount").textContent = dueWeek.length;
+  document.getElementById("followupNavBadge").textContent = overdue.length + scheduled.filter(c=>daysFromToday(c.followup)===0).length;
+  document.getElementById("allCount").textContent = customers.length;
+  document.getElementById("prospectTrend").textContent = customers.length ? `${customers.filter(c=>c.status==="Qualified").length} qualified opportunities` : "Build your pipeline";
+  renderFollowupList(sortedByFollowup.slice(0,4));
+  renderVolumeChart();
+  renderRecent();
+  renderCustomerTable();
+  renderFollowupColumns();
+}
 
-        <div class="view" id="customersView">
-          <div class="page-heading row">
-            <div><p class="eyebrow">YOUR PIPELINE</p><h1>Customers</h1><p>Every prospect, contact, and trade lane in one place.</p></div>
-            <button class="primary-button desktop-only" data-add>＋ Add customer</button>
-          </div>
-          <div class="toolbar panel">
-            <div class="filter-group">
-              <button class="filter-chip active" data-filter="All">All <span id="allCount">0</span></button>
-              <button class="filter-chip" data-filter="Prospect">Prospects</button>
-              <button class="filter-chip" data-filter="Qualified">Qualified</button>
-              <button class="filter-chip" data-filter="Customer">Customers</button>
-            </div>
-            <select id="sortSelect" aria-label="Sort customers">
-              <option value="followup">Next follow-up</option>
-              <option value="newest">Recently added</option>
-              <option value="volume">Highest volume</option>
-              <option value="name">Customer name</option>
-            </select>
-          </div>
-          <article class="panel customer-table-panel">
-            <div class="table-wrap"><table><thead><tr><th>Customer & contact</th><th>Trade lane</th><th>Origins → destinations</th><th>Annual volume</th><th>Status</th><th>Next follow-up</th><th></th></tr></thead><tbody id="customerTable"></tbody></table></div>
-            <div id="emptyCustomers" class="empty-state hidden"><div class="empty-icon">⌕</div><h3>No customers found</h3><p>Try a different search or add a new prospect.</p></div>
-          </article>
-        </div>
+function renderFollowupList(items) {
+  const el = document.getElementById("followupList");
+  if (!items.length) { el.innerHTML = `<div class="empty-column">No follow-ups yet.</div>`; return; }
+  el.innerHTML = items.map(c=>{
+    const date=parseDate(c.followup);
+    return `<div class="followup-row"><div class="date-tile ${daysFromToday(c.followup)<0?"overdue":""}"><b>${date.getDate()}</b><small>${date.toLocaleDateString("en-US",{month:"short"})}</small></div><div class="followup-main"><strong>${esc(c.name)}</strong><span>${esc(c.notes || c.lane || "Follow up with contact")}</span></div>${statusPill(c.status)}</div>`;
+  }).join("");
+}
+function renderVolumeChart() {
+  const colors={Prospect:"#4f8b79",Qualified:"#577fa7",Customer:"#d3a34e","On hold":"#a4aaa8"};
+  const totals={};
+  customers.forEach(c=>totals[c.status]=(totals[c.status]||0)+(Number(c.volume)||0));
+  const grand=Object.values(totals).reduce((a,b)=>a+b,0);
+  document.getElementById("volumeChart").innerHTML = `<div class="chart-total"><strong>${grand.toLocaleString()}</strong><span>TOTAL ANNUAL VOLUME</span></div>` +
+    Object.keys(colors).map(status=>`<div class="chart-row"><span>${status}</span><div class="chart-track"><div class="chart-fill" style="width:${grand?Math.max(3,(totals[status]||0)/grand*100):0}%;background:${colors[status]}"></div></div><span class="chart-value">${(totals[status]||0).toLocaleString()}</span></div>`).join("");
+}
+function renderRecent() {
+  const items=[...customers].sort((a,b)=>b.created.localeCompare(a.created)).slice(0,4);
+  document.getElementById("recentTable").innerHTML = items.map(c=>`<tr><td>${customerCell(c)}</td><td><span class="lane-badge">${esc(c.lane||"Not set")}</span></td><td><b>${Number(c.volume).toLocaleString()}</b> <small>${esc(c.unit)}</small></td><td>${statusPill(c.status)}</td><td><span class="followup-date ${daysFromToday(c.followup)<0?"overdue":""}">${esc(dueText(c.followup))}</span></td><td>${actionMenu(c)}</td></tr>`).join("");
+}
+function filteredCustomers() {
+  let list=customers.filter(c=>{
+    const matchesFilter=activeFilter==="All"||c.status===activeFilter;
+    const hay=[c.name,c.contact,c.email,c.phone,c.lane,c.origins,c.destinations].join(" ").toLowerCase();
+    return matchesFilter && hay.includes(searchTerm);
+  });
+  const sort=document.getElementById("sortSelect").value;
+  if(sort==="followup") list.sort((a,b)=>(a.followup||"9999").localeCompare(b.followup||"9999"));
+  if(sort==="newest") list.sort((a,b)=>b.created.localeCompare(a.created));
+  if(sort==="volume") list.sort((a,b)=>Number(b.volume)-Number(a.volume));
+  if(sort==="name") list.sort((a,b)=>a.name.localeCompare(b.name));
+  return list;
+}
+function renderCustomerTable() {
+  const list=filteredCustomers(), body=document.getElementById("customerTable"), empty=document.getElementById("emptyCustomers");
+  empty.classList.toggle("hidden",list.length>0);
+  body.innerHTML=list.map(c=>`<tr><td>${customerCell(c)}</td><td><span class="lane-badge">${esc(c.lane||"Not set")}</span></td><td>${esc(c.origins||"—")} <span class="subline">→ ${esc(c.destinations||"—")}</span></td><td><b>${Number(c.volume).toLocaleString()}</b><span class="subline">${esc(c.unit)}</span></td><td>${statusPill(c.status)}</td><td><span class="followup-date ${daysFromToday(c.followup)<0?"overdue":""}">${esc(dueText(c.followup))}</span></td><td>${actionMenu(c)}</td></tr>`).join("");
+}
+function renderFollowupColumns() {
+  const groups={overdue:[],today:[],upcoming:[]};
+  [...customers].sort((a,b)=>a.followup.localeCompare(b.followup)).forEach(c=>{
+    const d=daysFromToday(c.followup);
+    if (d === null) return;
+    groups[d<0?"overdue":d===0?"today":"upcoming"].push(c);
+  });
+  ["overdue","today","upcoming"].forEach(group=>{
+    document.getElementById(group+"Label").textContent=groups[group].length;
+    const el=document.getElementById(group+"Cards");
+    el.innerHTML=groups[group].length?groups[group].map(c=>`<article class="followup-card ${group}"><div class="followup-card-head"><div><h3>${esc(c.name)}</h3><p>${esc(c.contact||"No contact")} · ${esc(c.email||c.phone||"No details")}</p></div>${statusPill(c.status)}</div><div class="lane-line"><span>${esc(c.lane||"Lane not set")}</span><b>${esc(dueText(c.followup))}</b></div><div class="followup-card-actions"><button class="complete-button" data-complete="${c.id}">✓ Done</button><button class="edit-button" data-edit="${c.id}">Edit</button></div></article>`).join(""):`<div class="empty-column">Nothing here — nicely done.</div>`;
+  });
+}
 
-        <div class="view" id="followupsView">
-          <div class="page-heading"><div><p class="eyebrow">STAY ON COURSE</p><h1>Follow-ups</h1><p>A focused list of every conversation that needs your attention.</p></div></div>
-          <div class="followup-columns">
-            <section class="followup-column"><div class="column-title overdue-title"><span></span><h2>Overdue</h2><b id="overdueLabel">0</b></div><div id="overdueCards" class="card-stack"></div></section>
-            <section class="followup-column"><div class="column-title today-title"><span></span><h2>Today</h2><b id="todayLabel">0</b></div><div id="todayCards" class="card-stack"></div></section>
-            <section class="followup-column"><div class="column-title upcoming-title"><span></span><h2>Upcoming</h2><b id="upcomingLabel">0</b></div><div id="upcomingCards" class="card-stack"></div></section>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
+function switchView(view) {
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n=>n.classList.toggle("active",n.dataset.view===view));
+  document.getElementById(view+"View").classList.add("active");
+  document.querySelector(".sidebar").classList.remove("open");
+}
+function openModal(customer=null) {
+  document.getElementById("customerForm").reset();
+  document.getElementById("customerId").value=customer?.id||"";
+  document.getElementById("modalTitle").textContent=customer?"Edit customer":"Add a customer";
+  const map={customerName:"name",contactName:"contact",email:"email",phone:"phone",lane:"lane",origins:"origins",destinations:"destinations",annualVolume:"volume",volumeUnit:"unit",followupDate:"followup",status:"status",notes:"notes"};
+  Object.entries(map).forEach(([field,key])=>document.getElementById(field).value=customer?.[key]??(field==="followupDate"?addDays(7):""));
+  document.getElementById("customerModal").classList.remove("hidden");
+  setTimeout(()=>document.getElementById("customerName").focus(),30);
+}
+function closeModal(){document.getElementById("customerModal").classList.add("hidden")}
+function showToast(text){const el=document.getElementById("toast");el.textContent=text;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2500)}
+function completeFollowup(id){
+  const c=customers.find(x=>x.id===id); if(!c)return;
+  const existingDate=parseDate(c.followup);
+  const next=existingDate && existingDate>new Date()?existingDate:new Date();
+  next.setDate(next.getDate()+14); c.followup=next.toLocaleDateString("en-CA");
+  saveCustomers();render();showToast(`Follow-up completed. Next reminder: ${formatDate(c.followup)}`);
+}
+function exportCSV(){
+  const headers=["Customer Name","Contact Name","Email","Phone","Lane","Origins","Destinations","Annual Volume","Volume Unit","Status","Next Follow-up","Notes"];
+  const keys=["name","contact","email","phone","lane","origins","destinations","volume","unit","status","followup","notes"];
+  const quote=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const csv=[headers.map(quote).join(","),...customers.map(c=>keys.map(k=>quote(c[k])).join(","))].join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download=`FreightFlow-CRM-backup-${todayISO()}.csv`;a.click();URL.revokeObjectURL(a.href);
+}
+function parseCSV(text){
+  const rows=[];let row=[],cell="",quoted=false;
+  for(let i=0;i<text.length;i++){const ch=text[i],next=text[i+1];if(ch==='"'&&quoted&&next==='"'){cell+='"';i++;}else if(ch==='"'){quoted=!quoted;}else if(ch===","&&!quoted){row.push(cell);cell="";}else if((ch==="\n"||ch==="\r")&&!quoted){if(ch==="\r"&&next==="\n")i++;row.push(cell);if(row.some(x=>x.trim()))rows.push(row);row=[];cell="";}else cell+=ch}
+  row.push(cell);if(row.some(x=>x.trim()))rows.push(row);return rows;
+}
+function importCSV(file){
+  const reader=new FileReader();
+  reader.onload=()=>{try{const rows=parseCSV(reader.result);if(rows.length<2)throw new Error();const imported=rows.slice(1).map((r,i)=>({id:`ff-import-${Date.now()}-${i}`,name:r[0]||"Unnamed customer",contact:r[1]||"",email:r[2]||"",phone:r[3]||"",lane:r[4]||"",origins:r[5]||"",destinations:r[6]||"",volume:Number(r[7])||0,unit:r[8]||"TEU",status:r[9]||"Prospect",followup:/^\d{4}-\d{2}-\d{2}$/.test(r[10])?r[10]:addDays(7),notes:r[11]||"",created:todayISO()}));customers=imported;saveCustomers();render();showToast(`${imported.length} customers imported`)}catch{showToast("That CSV could not be imported")}};
+  reader.readAsText(file);
+}
 
-  <div class="modal-backdrop hidden" id="customerModal">
-    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-head"><div><p class="eyebrow">CUSTOMER RECORD</p><h2 id="modalTitle">Add a customer</h2></div><button class="icon-button" data-close aria-label="Close">×</button></div>
-      <form id="customerForm">
-        <input type="hidden" id="customerId">
-        <div class="form-section"><h3>Company & contact</h3>
-          <div class="form-grid">
-            <label class="span-2">Customer name *<input id="customerName" required placeholder="e.g. Acme Manufacturing"></label>
-            <label>Contact name<input id="contactName" placeholder="Full name"></label>
-            <label>Status<select id="status"><option>Prospect</option><option>Qualified</option><option>Customer</option><option>On hold</option></select></label>
-            <label>Email<input id="email" type="email" placeholder="name@company.com"></label>
-            <label>Phone number<input id="phone" type="tel" placeholder="+1 312 555 0123"></label>
-          </div>
-        </div>
-        <div class="form-section"><h3>Freight opportunity</h3>
-          <div class="form-grid">
-            <label class="span-2">Lane<input id="lane" placeholder="e.g. Transpacific Eastbound"></label>
-            <label>Country/countries of origin<input id="origins" placeholder="China, Vietnam"></label>
-            <label>Destination/s<input id="destinations" placeholder="United States, Canada"></label>
-            <label>Annual volume<input id="annualVolume" type="number" min="0" step="1" placeholder="e.g. 1200"></label>
-            <label>Volume unit<select id="volumeUnit"><option>TEU</option><option>Shipments</option><option>Containers</option><option>Tons</option><option>Kg</option></select></label>
-          </div>
-        </div>
-        <div class="form-section"><h3>Next step</h3>
-          <div class="form-grid">
-            <label>Next follow-up date *<input id="followupDate" type="date" required></label>
-            <label class="span-2">Notes<textarea id="notes" rows="3" placeholder="Add context, rates discussed, or next action..."></textarea></label>
-          </div>
-        </div>
-        <div class="modal-actions"><button type="button" class="secondary-button" data-close>Cancel</button><button type="submit" class="primary-button">Save customer</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div class="modal-backdrop hidden" id="deleteModal">
-    <section class="confirm-modal" role="alertdialog" aria-modal="true">
-      <div class="danger-icon">!</div><h2>Delete this customer?</h2><p>This removes the customer and follow-up from this computer.</p>
-      <div class="modal-actions"><button class="secondary-button" data-delete-cancel>Cancel</button><button class="danger-button" id="confirmDelete">Delete customer</button></div>
-    </section>
-  </div>
-  <div class="toast" id="toast" role="status"></div>
-  <script src="workbook-prospects.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
+document.getElementById("dateGreeting").textContent=new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}).toUpperCase();
+document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.go)));
+document.querySelectorAll("[data-add]").forEach(b=>b.addEventListener("click",()=>openModal()));
+document.getElementById("addCustomerBtn").addEventListener("click",()=>openModal());
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",closeModal));
+document.getElementById("customerModal").addEventListener("click",e=>{if(e.target.id==="customerModal")closeModal()});
+document.getElementById("mobileMenu").addEventListener("click",()=>document.querySelector(".sidebar").classList.toggle("open"));
+document.getElementById("globalSearch").addEventListener("input",e=>{searchTerm=e.target.value.toLowerCase().trim();if(searchTerm)switchView("customers");renderCustomerTable()});
+document.querySelectorAll(".filter-chip").forEach(b=>b.addEventListener("click",()=>{activeFilter=b.dataset.filter;document.querySelectorAll(".filter-chip").forEach(x=>x.classList.toggle("active",x===b));renderCustomerTable()}));
+document.getElementById("sortSelect").addEventListener("change",renderCustomerTable);
+document.getElementById("exportBtn").addEventListener("click",exportCSV);
+document.getElementById("importInput").addEventListener("change",e=>{if(e.target.files[0])importCSV(e.target.files[0]);e.target.value=""});
+document.getElementById("customerForm").addEventListener("submit",e=>{
+  e.preventDefault();const id=document.getElementById("customerId").value;
+  const data={id:id||`ff-${Date.now()}`,name:document.getElementById("customerName").value.trim(),contact:document.getElementById("contactName").value.trim(),email:document.getElementById("email").value.trim(),phone:document.getElementById("phone").value.trim(),lane:document.getElementById("lane").value.trim(),origins:document.getElementById("origins").value.trim(),destinations:document.getElementById("destinations").value.trim(),volume:Number(document.getElementById("annualVolume").value)||0,unit:document.getElementById("volumeUnit").value,status:document.getElementById("status").value,followup:document.getElementById("followupDate").value,notes:document.getElementById("notes").value.trim(),created:id?(customers.find(c=>c.id===id)?.created||todayISO()):todayISO()};
+  if(id)customers=customers.map(c=>c.id===id?data:c);else customers.unshift(data);
+  saveCustomers();closeModal();render();showToast(id?"Customer updated":"Customer added");
+});
+document.addEventListener("click",e=>{
+  const menu=e.target.closest("[data-menu]"),edit=e.target.closest("[data-edit]"),complete=e.target.closest("[data-complete]"),del=e.target.closest("[data-delete]");
+  if(menu){e.stopPropagation();document.querySelectorAll(".action-menu").forEach(m=>m.classList.toggle("hidden",m.id!==`menu-${menu.dataset.menu}`));return}
+  document.querySelectorAll(".action-menu").forEach(m=>m.classList.add("hidden"));
+  if(edit)openModal(customers.find(c=>c.id===edit.dataset.edit));
+  if(complete)completeFollowup(complete.dataset.complete);
+  if(del){deleteTarget=del.dataset.delete;document.getElementById("deleteModal").classList.remove("hidden")}
+});
+document.querySelector("[data-delete-cancel]").addEventListener("click",()=>document.getElementById("deleteModal").classList.add("hidden"));
+document.getElementById("confirmDelete").addEventListener("click",()=>{customers=customers.filter(c=>c.id!==deleteTarget);saveCustomers();render();document.getElementById("deleteModal").classList.add("hidden");showToast("Customer deleted")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();document.getElementById("deleteModal").classList.add("hidden")}});
+render();
